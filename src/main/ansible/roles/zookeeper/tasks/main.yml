@@ -1,0 +1,123 @@
+#
+# Copyright (C) ${project.inceptionYear} DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# source: https://github.com/objectrocket/ansible-kafka
+
+- name: Add group "zookeeper"
+  group:
+    name: "{{ zookeeper_group }}"
+    system: yes
+
+- name: Add user "zookeeper"
+  user:
+    name: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    home: "{{ zookeeper_data_dir }}"
+    shell: "/sbin/nologin"
+    system: yes
+
+- name: Download the tarball
+  get_url:
+    url: "http://mirrors.supportex.net/apache/zookeeper/zookeeper-{{ zookeeper_version }}/zookeeper-{{ zookeeper_version }}.tar.gz"
+    dest: "/opt/zookeeper-{{ zookeeper_version }}.tar.gz"
+
+- name: Extract the tarball
+  unarchive:
+    src: /opt/zookeeper-{{ zookeeper_version }}.tar.gz
+    dest: /opt/
+    copy: no
+    creates: /opt/zookeeper-{{ zookeeper_version }}
+
+- name: Symlink install directory
+  file:
+    src: /opt/zookeeper-{{ zookeeper_version }}
+    path: /opt/zookeeper
+    state: link
+
+- name: Set permissions to Zookeeper folder
+  file:
+    path: /opt/zookeeper/
+    owner: root
+    group: root
+    recurse: yes
+
+- name: Create Zookeeper data directory
+  file:
+    path: "{{ zookeeper_data_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+
+- name: Create Zookeeper log directory
+  file:
+    path: "{{ zookeeper_log_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+
+- name: Create Zookeeper conf directory
+  file:
+    path: "{{ zookeeper_conf_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Install Zookeeper init script
+  template:
+    src: zookeeper-server.j2
+    dest: /etc/init.d/zookeeper-server
+    mode: 0755
+  notify: Reload systemd
+
+- meta: flush_handlers
+
+- name: Configure Zookeeper server
+  template:
+    src: zoo.cfg.j2
+    dest: "{{zookeeper_conf_dir}}/zoo.cfg"
+  notify: Restart zookeeper
+
+- name: Configure myid
+  template:
+    src: myid.j2
+    dest: "{{ zookeeper_data_dir }}/myid"
+  notify: Restart zookeeper
+
+- name: Upload log4j config
+  copy:
+    src: log4j.properties
+    dest: "{{ zookeeper_conf_dir }}/log4j.properties"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart zookeeper
+
+- meta: flush_handlers
+
+- name: Make sure Zookeeper is running
+  service:
+    name: zookeeper-server
+    enabled: yes
+    state: started
+
+- name: Add Zookeeper binaries to PATH
+  copy:
+    src: zookeeper.sh
+    dest: /etc/profile.d/
+    owner: root
+    group: root
+    mode: 644
