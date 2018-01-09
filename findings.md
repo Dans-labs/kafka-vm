@@ -20,3 +20,8 @@ the number of subscribed consumers for all consumers to receive data. [A single 
 be shared across several consumers within the same group unless a consumer goes offline.](https://stackoverflow.com/a/24415632/2389405)
 * If all consumers are in different groups, but subscribed to the same topic, the data will be
 replicated across all consumers.
+* See also [How to choose the number of partitions](https://www.confluent.io/blog/how-to-choose-the-number-of-topicspartitions-in-a-kafka-cluster/)
+
+## Other resources to watch:
+* https://www.youtube.com/playlist?list=PLkz1SCf5iB4enAR00Z46JwY9GGkaS2NON
+* https://youtu.be/SspgvvQ13DU

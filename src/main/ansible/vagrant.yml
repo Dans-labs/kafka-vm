@@ -38,10 +38,6 @@
       name: "java-1.8.0-openjdk"
       state: latest
 
-#  - name: Setup Httpd
-#    include_role:
-#      name: httpd
-
   - name: Setup Zookeeper
     include_role:
       name: zookeeper
