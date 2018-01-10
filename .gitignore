@@ -1,6 +1,4 @@
-# Created by .ignore support plugin (hsz.mobi)
-
 .dans.knaw.nl-yum-repo
 .vagrant
 target
-kafka.iml
+*.iml
