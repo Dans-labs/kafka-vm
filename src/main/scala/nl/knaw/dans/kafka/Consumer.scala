@@ -26,20 +26,21 @@ object Consumer extends App {
   run("test.dans.knaw.nl:9092")
 
   def run(server: String): Unit = {
-    val TOPIC = "test"
+    val topic = "test"
+    val group = "group1"
 
     val props = new Properties() {
       put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, server)
       put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
       put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-      put(ConsumerConfig.GROUP_ID_CONFIG, "group2")
+      put(ConsumerConfig.GROUP_ID_CONFIG, group)
     }
 
     val consumer = new KafkaConsumer[String, String](props)
 
-    consumer.subscribe(Collections.singletonList(TOPIC))
+    consumer.subscribe(Collections.singletonList(topic))
 
-    println(s"subscribed to $TOPIC")
+    println(s"subscribed to $topic")
 
     val currentThread = Thread.currentThread()
     Runtime.getRuntime.addShutdownHook(new Thread() {

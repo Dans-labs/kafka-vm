@@ -24,6 +24,8 @@ object Producer extends App {
   run("test.dans.knaw.nl:9092")
 
   def run(server: String): Unit = {
+    val topic = "test"
+
     val props = new Properties() {
       put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, server)
       put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
@@ -34,16 +36,14 @@ object Producer extends App {
 
     println(s"producer: $producer")
 
-    val TOPIC = "test"
-
     for (i <- 1 to 50) {
-      val record = new ProducerRecord(TOPIC, "key", s"hello $i")
+      val record = new ProducerRecord(topic, "key", s"hello $i")
       println(s"send record: $record")
       producer.send(record)
       Thread.sleep(200)
     }
 
-    val record = new ProducerRecord(TOPIC, "key", "the end " + new java.util.Date)
+    val record = new ProducerRecord(topic, "key", "the end " + new java.util.Date)
     println(s"send last record: $record")
     producer.send(record)
 
